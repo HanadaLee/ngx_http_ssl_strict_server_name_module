@@ -61,6 +61,12 @@ Different aliases in the same server, such as `example.com` and `www.example.com
 
 Requires nginx with `--with-http_ssl_module`. Configuration fails if HTTP SSL support is disabled.
 
+To let this module control nginx's built-in SNI check, apply the bundled core patch:
+
+```sh
+bash /path/to/ngx_http_ssl_strict_server_name_module/util/apply-nginx-patches.sh /path/to/nginx
+```
+
 For a static build, run from the nginx source directory:
 
 ```sh
@@ -128,7 +134,7 @@ Names are compared after normalization: case, a trailing dot, and the request ho
 
 Validation runs in `post_read`, after request headers have been read and before rewrite processing. Plain HTTP requests are unaffected.
 
-> On unmodified nginx, `auto` is equivalent to `off`, and nginx's built-in SNI check remains active. Disabling that built-in check requires the core integration [patch](https://git.hanada.info/hanada/openresty/-/tree/main/patches).
+> On unmodified nginx, `auto` is equivalent to `off`, and nginx's built-in SNI check remains active. Disabling that built-in check requires the bundled [core patch](patches/nginx-1.31.8+.patch).
 
 ## Tests
 
@@ -141,11 +147,12 @@ bash util/run-tests.sh
 TEST_LINK=dynamic bash util/run-tests.sh
 ```
 
-For conditional configuration tests, also place `ngx_expr_module` in `.ci/ngx_expr_module` and use a source tree with conditional configuration support:
+For conditional configuration tests, also place `ngx_expr_module` in `.ci/ngx_expr_module` and enable expression support:
 
 ```sh
 TEST_EXPR=enabled bash util/run-tests.sh
 TEST_EXPR=enabled TEST_LINK=dynamic bash util/run-tests.sh
+TEST_CORE_PATCH=disabled TEST_EXPR=enabled bash util/run-tests.sh
 ```
 
 The runner requires a C build toolchain, PCRE2, OpenSSL, zlib, Perl, and IO::Socket::SSL. HTTP/3 tests additionally require CryptX. Failure logs are saved in `.ci/test-output`.

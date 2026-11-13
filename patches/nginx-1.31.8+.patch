@@ -1,0 +1,40 @@
+--- a/src/http/ngx_http_request.c
++++ b/src/http/ngx_http_request.c
+@@ -2519,12 +2519,16 @@
+ #if (NGX_HTTP_SSL && defined SSL_CTRL_SET_TLSEXT_HOSTNAME)
+ 
+     if (hc->ssl_servername) {
++#if !(NGX_HTTP_SSL_STRICT_SERVER_NAME)
+         ngx_http_ssl_srv_conf_t  *sscf;
++#endif
+ 
+         if (rc == NGX_DECLINED) {
+             cscf = hc->addr_conf->default_server;
+             rc = NGX_OK;
+         }
++
++#if !(NGX_HTTP_SSL_STRICT_SERVER_NAME)
+ 
+         sscf = ngx_http_get_module_srv_conf(cscf->ctx, ngx_http_ssl_module);
+ 
+@@ -2535,6 +2539,8 @@
+             ngx_http_finalize_request(r, NGX_HTTP_MISDIRECTED_REQUEST);
+             return NGX_ERROR;
+         }
++
++#endif
+     }
+ 
+ #endif
+--- a/src/http/modules/ngx_http_ssl_module.h
++++ b/src/http/modules/ngx_http_ssl_module.h
+@@ -12,6 +12,9 @@
+ #include <ngx_config.h>
+ #include <ngx_core.h>
+ #include <ngx_http.h>
++
++
++#define NGX_HTTP_SSL_STRICT_SERVER_NAME_CORE  1
+ 
+ 
+ typedef struct {

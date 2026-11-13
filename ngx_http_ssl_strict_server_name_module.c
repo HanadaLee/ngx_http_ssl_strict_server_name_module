@@ -101,7 +101,7 @@ ngx_http_ssl_strict_server_name_handler(ngx_http_request_t *r)
     ngx_uint_t                                   mode;
     ngx_http_connection_t                       *hc;
     ngx_http_ssl_strict_server_name_srv_conf_t  *conf;
-#if (NGX_RESTY_EXT)
+#if (NGX_HTTP_SSL_STRICT_SERVER_NAME_CORE)
     ngx_http_ssl_srv_conf_t                     *sscf;
 #endif
 
@@ -136,7 +136,7 @@ ngx_http_ssl_strict_server_name_handler(ngx_http_request_t *r)
     }
 
     if (mode == NGX_HTTP_SSL_STRICT_SERVER_NAME_AUTO) {
-#if (NGX_RESTY_EXT)
+#if (NGX_HTTP_SSL_STRICT_SERVER_NAME_CORE)
         sscf = ngx_http_get_module_srv_conf(r, ngx_http_ssl_module);
 
         if (!sscf->verify) {

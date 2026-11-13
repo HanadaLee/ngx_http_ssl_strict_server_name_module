@@ -10,6 +10,10 @@ test_output="$module_root/.ci/test-output"
 mkdir -p "$test_output"
 exec > >(tee "$test_output/run.log") 2>&1
 
+if [[ "${TEST_CORE_PATCH:-enabled}" == enabled ]]; then
+    bash "$module_root/util/apply-nginx-patches.sh" "$nginx_source"
+fi
+
 cd "$nginx_source"
 configure=./configure
 [[ -f "$configure" ]] || configure=auto/configure
@@ -44,9 +48,9 @@ export TEST_NGINX_BINARY="$nginx_source/objs/nginx"
 export PERL5LIB="$nginx_tests/lib${PERL5LIB:+:$PERL5LIB}"
 export TMPDIR="$(mktemp -d /tmp/nginx-ssl-strict.XXXXXX)"
 export TEST_NGINX_LEAVE=1
-export TEST_NGINX_EXT=0
-if grep -q '^#define NGX_RESTY_EXT  *1' objs/ngx_auto_config.h; then
-    export TEST_NGINX_EXT=1
+export TEST_NGINX_SSL_STRICT_CORE=0
+if grep -q '^#define NGX_HTTP_SSL_STRICT_SERVER_NAME_CORE  *1$' src/http/modules/ngx_http_ssl_module.h; then
+    export TEST_NGINX_SSL_STRICT_CORE=1
 fi
 if [[ "$(id -u)" == 0 ]]; then
     export TEST_NGINX_GLOBALS="${TEST_NGINX_GLOBALS:-} user root;"

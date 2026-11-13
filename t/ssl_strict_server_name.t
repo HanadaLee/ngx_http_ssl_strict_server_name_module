@@ -17,7 +17,7 @@ my $d = $t->testdir();
 my $h2 = $t->has_module('http_v2') && $t->has_feature('socket_ssl_alpn');
 my $h3 = $t->has_module('http_v3') && $t->has_feature('cryptx');
 my $expr = $t->has_module('ngx_expr_module');
-my $ext = $ENV{TEST_NGINX_EXT} // 0;
+my $core = $ENV{TEST_NGINX_SSL_STRICT_CORE} // 0;
 
 if ($h2) { require Test::Nginx::HTTP2; }
 if ($h3) { require Test::Nginx::HTTP3; }
@@ -204,7 +204,7 @@ my @cases = (
 	['strict.test', 'off.test', 200, 'request server disables strict mode'],
 	[undef, 'off.test', 200, 'off missing SNI'],
 	['unknown.test', 'off.test', 200, 'off unmatched SNI'],
-	['strict.test', 'off-verify.test', $ext ? 200 : 421,
+	['strict.test', 'off-verify.test', $core ? 200 : 421,
 		'off with client verification'],
 	['auto.test', 'auto.test', 200, 'auto matching SNI'],
 	['strict.test', 'auto.test', 200, 'auto verification disabled'],
@@ -246,7 +246,8 @@ if ($expr) {
 			undef, { header => 'skip' }],
 		['off.test', 'scoped.test', 421, 'request server expression replaces parent expression',
 			undef, { header => 'off' }],
-		['strict.test', 'optional.test', 200, 'conditional off with client verification',
+		['strict.test', 'optional.test', $core ? 200 : 421,
+			'conditional off with client verification',
 			undef, { header => 'off' }],
 		['off.test', 'realip.test', 200, 'realip runs before condition evaluation',
 			undef, { realip => '192.0.2.10' }],
