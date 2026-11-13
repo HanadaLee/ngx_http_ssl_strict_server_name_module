@@ -121,7 +121,7 @@ Names are compared after normalization: case, a trailing dot, and the request ho
 
 Validation runs in `post_read`, after request headers have been read and before rewrite processing. Plain HTTP requests are unaffected.
 
-> On unmodified nginx, `auto` is equivalent to `off`, and nginx's built-in SNI check remains active. Disabling that built-in check requires the bundled [core patch](patches/nginx-1.31.8+.patch).
+> On unmodified nginx, the built-in SNI check remains active. Disabling it with `off` requires the bundled [core patch](patches/nginx-1.31.8+.patch).
 
 ## Tests
 

@@ -1,1 +1,1 @@
-NGX_HTTP_SSL_STRICT_SERVER_NAME_CORE src/http/modules/ngx_http_ssl_module.h nginx-1.31.8+.patch
+nginx-1.31.8+.patch

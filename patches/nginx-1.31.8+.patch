@@ -26,15 +26,3 @@
      }
  
  #endif
---- a/src/http/modules/ngx_http_ssl_module.h
-+++ b/src/http/modules/ngx_http_ssl_module.h
-@@ -12,6 +12,9 @@
- #include <ngx_config.h>
- #include <ngx_core.h>
- #include <ngx_http.h>
-+
-+
-+#define NGX_HTTP_SSL_STRICT_SERVER_NAME_CORE  1
- 
- 
- typedef struct {
