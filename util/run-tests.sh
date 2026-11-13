@@ -19,9 +19,6 @@ configure=./configure
 [[ -f "$configure" ]] || configure=auto/configure
 
 module_arg="--add-module=$module_root"
-if [[ "${TEST_LINK:-static}" == dynamic ]]; then
-    module_arg="--add-dynamic-module=$module_root"
-fi
 
 if sh "$configure" "$module_arg" > "$test_output/no-ssl.log" 2>&1; then
     echo 'configure unexpectedly accepted a build without HTTP SSL'
@@ -41,6 +38,14 @@ configure_args=(
 if [[ "${TEST_EXPR:-disabled}" == enabled ]]; then
     configure_args+=(--with-http_json_module "--add-module=$expr_source")
 fi
+if sh "$configure" "${configure_args[@]}" "--add-dynamic-module=$module_root" \
+    > "$test_output/dynamic-rejected.log" 2>&1
+then
+    echo 'configure unexpectedly accepted a dynamic module'
+    exit 1
+fi
+grep -F 'must be built with --add-module' "$test_output/dynamic-rejected.log"
+
 sh "$configure" "${configure_args[@]}" "$module_arg"
 make -j"${TEST_BUILD_JOBS:-$(getconf _NPROCESSORS_ONLN)}"
 
@@ -56,10 +61,6 @@ if [[ "$(id -u)" == 0 ]]; then
     export TEST_NGINX_GLOBALS="${TEST_NGINX_GLOBALS:-} user root;"
 fi
 trap 'find "$TMPDIR" -type f -name "*.log" -exec cp --parents {} "$test_output/" \;' EXIT
-
-if [[ "${TEST_LINK:-static}" == dynamic ]]; then
-    export TEST_NGINX_GLOBALS="${TEST_NGINX_GLOBALS:-} load_module $nginx_source/objs/ngx_http_ssl_strict_server_name_module.so;"
-fi
 
 cd "$module_root"
 prove -v t/*.t

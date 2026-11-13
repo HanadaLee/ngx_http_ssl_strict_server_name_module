@@ -76,20 +76,7 @@ For a static build, run from the nginx source directory:
 make
 ```
 
-For a dynamic build:
-
-```sh
-./configure \
-    --with-http_ssl_module \
-    --add-dynamic-module=/path/to/ngx_http_ssl_strict_server_name_module
-make modules
-```
-
-Build the dynamic module with the same nginx source and compatible configuration as the server. Install the resulting `.so` in the server's module directory and load it in the main configuration:
-
-```nginx
-load_module modules/ngx_http_ssl_strict_server_name_module.so;
-```
+Dynamic modules are not supported.
 
 Add `--with-http_realip_module` when using real-IP configuration. HTTP/2 and HTTP/3 require their corresponding nginx modules.
 
@@ -144,14 +131,12 @@ Place the nginx and nginx-tests source trees in `.ci/nginx` and `.ci/nginx-tests
 
 ```sh
 bash util/run-tests.sh
-TEST_LINK=dynamic bash util/run-tests.sh
 ```
 
 For conditional configuration tests, also place `ngx_expr_module` in `.ci/ngx_expr_module` and enable expression support:
 
 ```sh
 TEST_EXPR=enabled bash util/run-tests.sh
-TEST_EXPR=enabled TEST_LINK=dynamic bash util/run-tests.sh
 TEST_CORE_PATCH=disabled TEST_EXPR=enabled bash util/run-tests.sh
 ```
 

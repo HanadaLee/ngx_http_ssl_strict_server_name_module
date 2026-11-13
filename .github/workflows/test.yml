@@ -21,7 +21,6 @@ jobs:
       matrix:
         source: [nginx, nginx-patched, nginx-ext]
         expr: [enabled, disabled]
-        link: [static, dynamic]
     steps:
       - uses: actions/checkout@v6
         with:
@@ -62,13 +61,12 @@ jobs:
         env:
           TEST_EXPR: ${{ matrix.expr }}
           TEST_CORE_PATCH: ${{ matrix.source == 'nginx' && 'disabled' || 'enabled' }}
-          TEST_LINK: ${{ matrix.link }}
         run: bash util/run-tests.sh
 
       - name: Upload failure logs
         if: failure()
         uses: actions/upload-artifact@v7
         with:
-          name: test-logs-${{ matrix.source }}-${{ matrix.expr }}-${{ matrix.link }}
+          name: test-logs-${{ matrix.source }}-${{ matrix.expr }}
           path: .ci/test-output/
           if-no-files-found: ignore

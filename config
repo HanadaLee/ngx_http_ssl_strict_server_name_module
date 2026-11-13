@@ -1,5 +1,10 @@
 ngx_addon_name=ngx_http_ssl_strict_server_name_module
 
+if [ "$ngx_module_link" = DYNAMIC ]; then
+    echo "$0: error: ngx_http_ssl_strict_server_name_module must be built with --add-module"
+    exit 1
+fi
+
 if [ "$HTTP_SSL" != YES ]; then
     echo "$ngx_addon_name requires --with-http_ssl_module"
     exit 1
@@ -19,7 +24,7 @@ else
     NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/ngx_http_ssl_strict_server_name_module.c"
 fi
 
-if [ "$ngx_module_link" != DYNAMIC -a "$HTTP_REALIP" = YES ]; then
+if [ "$HTTP_REALIP" = YES ]; then
     # Phase handlers run in reverse module order.
     HTTP_MODULES=`echo $HTTP_MODULES \
                   | sed "s/$ngx_addon_name//" \
