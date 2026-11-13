@@ -1,0 +1,72 @@
+name: Test
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: test-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        source: [nginx, nginx-ext, nginx-ext-expr]
+        link: [static, dynamic]
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Check out nginx
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ matrix.source == 'nginx' && 'nginx/nginx' || 'HanadaLee/nginx-ext' }}
+          ref: ${{ matrix.source == 'nginx' && 'release-1.31.8' || '1.31.8' }}
+          path: .ci/nginx
+          persist-credentials: false
+
+      - name: Check out expression module
+        if: matrix.source == 'nginx-ext-expr'
+        uses: actions/checkout@v6
+        with:
+          repository: HanadaLee/ngx_expr_module
+          ref: '1.0.1'
+          path: .ci/ngx_expr_module
+          persist-credentials: false
+
+      - name: Check out nginx-tests
+        uses: actions/checkout@v6
+        with:
+          repository: nginx/nginx-tests
+          path: .ci/nginx-tests
+          persist-credentials: false
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential libpcre2-dev libssl-dev zlib1g-dev \
+            perl libio-socket-ssl-perl libcryptx-perl
+
+      - name: Build and test
+        env:
+          TEST_EXPR: ${{ matrix.source == 'nginx-ext-expr' && 'enabled' || 'disabled' }}
+          TEST_LINK: ${{ matrix.link }}
+        run: bash util/run-tests.sh
+
+      - name: Upload failure logs
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-logs-${{ matrix.source }}-${{ matrix.link }}
+          path: .ci/test-output/
+          if-no-files-found: ignore
